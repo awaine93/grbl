@@ -31,6 +31,14 @@ void system_init()
   #endif
   CONTROL_PCMSK |= CONTROL_MASK;  // Enable specific pins of the Pin Change Interrupt
   PCICR |= (1 << CONTROL_INT);   // Enable Pin Change Interrupt
+
+  #ifdef Y_LIMIT_ON_D13
+    // Additional D13 LED handling - ensure pin works reliably as input
+    // Set D13 as input (even though limits_init does this, do it early)
+    DDRB &= ~(1<<DDB5);
+    PORTB |= (1<<PORTB5);  // Enable pull-up
+  #endif
+  
 }
 
 

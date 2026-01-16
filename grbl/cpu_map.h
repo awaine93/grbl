@@ -62,6 +62,7 @@
   #define LIMIT_PORT       PORTB
   #define X_LIMIT_BIT      1  // Uno Digital Pin 9
   #define Y_LIMIT_BIT      5  // Uno Digital Pin 13 (SWAPPED - was D10 / PB2)
+  #define Y_LIMIT_ON_D13      // Flag: Y-limit is on D13 which has LED, needs special handling
   #ifdef VARIABLE_SPINDLE // Z Limit pin and spindle enabled swapped to access hardware PWM on Pin 11.
     #define Z_LIMIT_BIT	   4 // Uno Digital Pin 12
   #else
