@@ -38,23 +38,28 @@
   #define DUAL_AXIS_CHECK_TRIGGER_2   bit(2)
 #endif
 
-void limits_init()
+void limits_init() 
 {
   LIMIT_DDR &= ~(LIMIT_MASK); // Set as input pins
-
   #ifdef DISABLE_LIMIT_PIN_PULL_UP
     LIMIT_PORT &= ~(LIMIT_MASK); // Normal low operation. Requires external pull-down.
   #else
     LIMIT_PORT |= (LIMIT_MASK);  // Enable internal pull-up resistors. Normal high operation.
   #endif
-
+  
+  #ifdef Y_LIMIT_ON_D13
+    // D13 special handling: ensure it's properly configured as input with pull-up
+    // despite the onboard LED
+    DDRB &= ~(1<<Y_LIMIT_BIT);   // Explicitly set D13 as input
+    PORTB |= (1<<Y_LIMIT_BIT);   // Explicitly enable pull-up on D13
+  #endif
+  
   if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) {
     LIMIT_PCMSK |= LIMIT_MASK; // Enable specific pins of the Pin Change Interrupt
     PCICR |= (1 << LIMIT_INT); // Enable Pin Change Interrupt
   } else {
     limits_disable();
   }
-
   #ifdef ENABLE_SOFTWARE_DEBOUNCE
     MCUSR &= ~(1<<WDRF);
     WDTCSR |= (1<<WDCE) | (1<<WDE);
@@ -77,7 +82,29 @@ void limits_disable()
 uint8_t limits_get_state()
 {
   uint8_t limit_state = 0;
-  uint8_t pin = (LIMIT_PIN & LIMIT_MASK);
+  uint8_t pin = LIMIT_PIN;
+  
+  #ifdef Y_LIMIT_ON_D13
+    // D13 has onboard LED - read multiple times for reliability
+    _delay_us(5);  // Small delay to let pin stabilize
+    uint8_t pin_read1 = LIMIT_PIN;
+    _delay_us(5);
+    uint8_t pin_read2 = LIMIT_PIN;
+    _delay_us(5);
+    uint8_t pin_read3 = LIMIT_PIN;
+    
+    // Use majority voting: if at least 2 of 3 reads agree, trust that value
+    if ((pin_read1 & (1<<Y_LIMIT_BIT)) && (pin_read2 & (1<<Y_LIMIT_BIT))) {
+      pin = pin_read2;  // Reads 1 and 2 agree
+    } else if ((pin_read2 & (1<<Y_LIMIT_BIT)) && (pin_read3 & (1<<Y_LIMIT_BIT))) {
+      pin = pin_read3;  // Reads 2 and 3 agree
+    } else if ((pin_read1 & (1<<Y_LIMIT_BIT)) && (pin_read3 & (1<<Y_LIMIT_BIT))) {
+      pin = pin_read3;  // Reads 1 and 3 agree
+    } else {
+      pin = LIMIT_PIN;  // Fall back to single read
+    }
+  #endif
+  
   #ifdef INVERT_LIMIT_PIN_MASK
     pin ^= INVERT_LIMIT_PIN_MASK;
   #endif
@@ -87,9 +114,6 @@ uint8_t limits_get_state()
     for (idx=0; idx<N_AXIS; idx++) {
       if (pin & get_limit_pin_mask(idx)) { limit_state |= (1 << idx); }
     }
-    #ifdef ENABLE_DUAL_AXIS
-      if (pin & (1<<DUAL_LIMIT_BIT)) { limit_state |= (1 << N_AXIS); }
-    #endif
   }
   return(limit_state);
 }

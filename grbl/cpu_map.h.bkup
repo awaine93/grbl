@@ -61,8 +61,7 @@
   #define LIMIT_PIN        PINB
   #define LIMIT_PORT       PORTB
   #define X_LIMIT_BIT      1  // Uno Digital Pin 9
-  #define Y_LIMIT_BIT      5  // Uno Digital Pin 13 (SWAPPED - was D10 / PB2)
-  #define Y_LIMIT_ON_D13      // Flag: Y-limit is on D13 which has LED, needs special handling
+  #define Y_LIMIT_BIT      2  // Uno Digital Pin 10
   #ifdef VARIABLE_SPINDLE // Z Limit pin and spindle enabled swapped to access hardware PWM on Pin 11.
     #define Z_LIMIT_BIT	   4 // Uno Digital Pin 12
   #else
@@ -124,8 +123,7 @@
     #ifndef USE_SPINDLE_DIR_AS_ENABLE_PIN
       #define SPINDLE_DIRECTION_DDR   DDRB
       #define SPINDLE_DIRECTION_PORT  PORTB
-  #define SPINDLE_DIRECTION_BIT   2   // Uno Digital Pin 10 (was digital pin 13 but swapped with ylimit for reverse spindle  http://pm.printech3d.co.uk:423/projects/printech/work_packages/77/activity)(NOTE: D13 can't be pulled-high input due to LED.)
-
+      #define SPINDLE_DIRECTION_BIT   5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
     #endif
 
     // Variable spindle configuration below. Do not change unless you know what you are doing.
@@ -152,12 +150,6 @@
     #define SPINDLE_PWM_DDR   DDRB
     #define SPINDLE_PWM_PORT  PORTB
     #define SPINDLE_PWM_BIT   3    // Uno Digital Pin 11
-
-    // Timer1 configuration for reverse PWM on D10 (SPINDLE_DIRECTION_BIT /  SPINDLE_)
-    #define SPINDLE_TCCRA_DIR_REGISTER    TCCR1A
-    #define SPINDLE_TCCRB_DIR_REGISTER    TCCR1B
-    #define SPINDLE_OCR_DIR_REGISTER      OCR1B
-    #define SPINDLE_COMB_DIR_BIT          COM1B1
   
   #else
 
