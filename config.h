@@ -203,11 +203,11 @@
 // NOTE: PLEASE DO NOT USE THIS, unless you have a situation that needs it.
 // #define INVERT_LIMIT_PIN_MASK ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)) // Default disabled. Uncomment to enable.
 
-// Inverts the spindle enable pin from low-disabled/high-enabled to low-enabled/high-disabled. Useful
-// for some pre-built electronic boards.
-// NOTE: If VARIABLE_SPINDLE is enabled(default), this option has no effect as the PWM output and
-// spindle enable are combined to one pin. If you need both this option and spindle speed PWM,
-// uncomment the config option USE_SPINDLE_DIR_AS_ENABLE_PIN below.
+// Inverts the RPWM enable pin logic from low-disabled/high-enabled to low-enabled/high-disabled.
+// NOTE: BTS7960 build - This only affects the RPWM (forward/D11) channel.
+// LPWM (reverse/D10) has no invert option. Do not enable this unless your BTS7960 wiring
+// specifically requires an inverted RPWM signal, which would be unusual.
+// NOTE: USE_SPINDLE_DIR_AS_ENABLE_PIN is permanently disabled in this build - do not reference it here.
 // #define INVERT_SPINDLE_ENABLE_PIN // Default disabled. Uncomment to enable.
 
 // Inverts the selected coolant pin from low-disabled/high-enabled to low-enabled/high-disabled. Useful
@@ -332,10 +332,13 @@
 // tool length offset value is subtracted from the current location.
 #define TOOL_LENGTH_OFFSET_AXIS Z_AXIS // Default z-axis. Valid values are X_AXIS, Y_AXIS, or Z_AXIS.
 
+// === AFTER ===
 // Enables variable spindle output voltage for different RPM values. On the Arduino Uno, the spindle
 // enable pin will output 5V for maximum RPM with 256 intermediate levels and 0V when disabled.
-// NOTE: IMPORTANT for Arduino Unos! When enabled, the Z-limit pin D11 and spindle enable pin D12 switch!
-// The hardware PWM output on pin D11 is required for variable spindle output voltages.
+// NOTE: BTS7960 build - Two hardware PWM channels are used:
+//   RPWM (forward) -> D11 / Timer2A
+//   LPWM  (reverse) -> D10 / Timer1B
+// The original Z-limit/spindle-enable pin swap note no longer applies - see cpu_map.h for current pin assignments.
 #define VARIABLE_SPINDLE // Default enabled. Comment to disable.
 
 // Used by variable spindle output only. This forces the PWM output to a minimum duty cycle when enabled.
@@ -349,15 +352,13 @@
 // NOTE: Compute duty cycle at the minimum PWM by this equation: (% duty cycle)=(SPINDLE_PWM_MIN_VALUE/255)*100
 // #define SPINDLE_PWM_MIN_VALUE 5 // Default disabled. Uncomment to enable. Must be greater than zero. Integer (1-255).
 
-// By default on a 328p(Uno), Grbl combines the variable spindle PWM and the enable into one pin to help
-// preserve I/O pins. For certain setups, these may need to be separate pins. This configure option uses
-// the spindle direction pin(D13) as a separate spindle enable pin along with spindle speed PWM on pin D11.
-// NOTE: This configure option only works with VARIABLE_SPINDLE enabled and a 328p processor (Uno).
-// NOTE: Without a direction pin, M4 will not have a pin output to indicate a difference with M3. 
-// NOTE: BEWARE! The Arduino bootloader toggles the D13 pin when it powers up. If you flash Grbl with
-// a programmer (you can use a spare Arduino as "Arduino as ISP". Search the web on how to wire this.),
-// this D13 LED toggling should go away. We haven't tested this though. Please report how it goes!
-// #define USE_SPINDLE_DIR_AS_ENABLE_PIN // Default disabled. Uncomment to enable.
+/// This option has been permanently disabled for the BTS7960 build.
+// D13 is now used as the Y-axis limit switch input with a 470ohm external pull-up resistor to 5V.
+// D10 is now used as LPWM (reverse PWM) via Timer1B, replacing the spindle direction pin function.
+// M3 = forward (RPWM/D11 active, LPWM/D10 zero)
+// M4 = reverse (LPWM/D10 active, RPWM/D11 zero)
+// See spindle_control.c spindle_set_state() for the shoot-through prevention logic.
+// #define USE_SPINDLE_DIR_AS_ENABLE_PIN // PERMANENTLY DISABLED - D13 repurposed as Y limit input.
 
 // Alters the behavior of the spindle enable pin with the USE_SPINDLE_DIR_AS_ENABLE_PIN option . By default,
 // Grbl will not disable the enable pin if spindle speed is zero and M3/4 is active, but still sets the PWM 

@@ -110,26 +110,26 @@
     #define COOLANT_MIST_PORT  PORTC
     #define COOLANT_MIST_BIT   4  // Uno Analog Pin 4
 
-    // Define spindle enable and spindle direction output pins.
-    #define SPINDLE_ENABLE_DDR    DDRB
-    #define SPINDLE_ENABLE_PORT   PORTB
+    // Define spindle RPWM and LPWM output pins for BTS7960 motor driver.
+    #define SPINDLE_RPWM_DDR    DDRB
+    #define SPINDLE_RPWM_PORT   PORTB
     // Z Limit pin and spindle PWM/enable pin swapped to access hardware PWM on Pin 11.
     #ifdef VARIABLE_SPINDLE
       #ifdef USE_SPINDLE_DIR_AS_ENABLE_PIN
         // If enabled, spindle direction pin now used as spindle enable, while PWM remains on D11.
-        #define SPINDLE_ENABLE_BIT    5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
+        #define SPINDLE_RPWM_BIT    5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
       #else
-        #define SPINDLE_ENABLE_BIT    3  // Uno Digital Pin 11 -- Z Limit pin on CNC sheild - connects to RPWM on BTS7960
+        #define SPINDLE_RPWM_BIT    3  // Uno Digital Pin 11 -- Z Limit pin on CNC shield - connects to RPWM on BTS7960
       #endif
     #else
-      #define SPINDLE_ENABLE_BIT    4  // Uno Digital Pin 12
+      #define SPINDLE_RPWM_BIT    4  // Uno Digital Pin 12
     #endif
     #ifndef USE_SPINDLE_DIR_AS_ENABLE_PIN
-      #define SPINDLE_DIRECTION_DDR   DDRB
-      #define SPINDLE_DIRECTION_PORT  PORTB
-      //SPINDLE_DIRECTION_BIT was originally set as 5 - Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.) <- i have wired this pin 
-      // so that it gives a 5v voltage with a 470ohm resistor to the input of the endstop now using D13
-      #define SPINDLE_DIRECTION_BIT   2  // Uno Digital Pin 10 - Y Limit pin on CNC sheild -- connects to LPWM on BTS7960
+      #define SPINDLE_LPWM_DDR    DDRB
+      #define SPINDLE_LPWM_PORT   PORTB
+      // SPINDLE_LPWM_BIT was originally SPINDLE_DIRECTION_BIT set as 5 - Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
+      // D13 is now used for Y endstop input with a 470ohm external pull-up resistor to 5V.
+      #define SPINDLE_LPWM_BIT    2  // Uno Digital Pin 10 - Y Limit pin on CNC shield -- connects to LPWM on BTS7960
     #endif
 
     // Variable spindle configuration below. Do not change unless you know what you are doing.
@@ -140,6 +140,8 @@
     #endif
     #define SPINDLE_PWM_OFF_VALUE     0
     #define SPINDLE_PWM_RANGE         (SPINDLE_PWM_MAX_VALUE-SPINDLE_PWM_MIN_VALUE)
+
+    // RPWM (forward) - Timer2A on D11
     #define SPINDLE_TCCRA_REGISTER    TCCR2A
     #define SPINDLE_TCCRB_REGISTER    TCCR2B
     #define SPINDLE_OCR_REGISTER      OCR2A
@@ -152,11 +154,17 @@
     // #define SPINDLE_TCCRB_INIT_MASK   ((1<<CS21) | (1<<CS20)) // 1/32 prescaler -> 1.96kHz
     #define SPINDLE_TCCRB_INIT_MASK      (1<<CS22)               // 1/64 prescaler -> 0.98kHz (J-tech laser)
 
-    // NOTE: On the 328p, these must be the same as the SPINDLE_ENABLE settings.
+    // NOTE: On the 328p, these must be the same as the SPINDLE_RPWM settings.
     #define SPINDLE_PWM_DDR   DDRB
     #define SPINDLE_PWM_PORT  PORTB
-    #define SPINDLE_PWM_BIT   3    // Uno Digital Pin 11
-  
+    #define SPINDLE_PWM_BIT   3    // Uno Digital Pin 11 (RPWM - forward)
+
+    // LPWM (reverse) - Timer1B on D10
+    #define SPINDLE_LPWM_TCCRA_REGISTER   TCCR1A
+    #define SPINDLE_LPWM_TCCRB_REGISTER   TCCR1B
+    #define SPINDLE_LPWM_OCR_REGISTER     OCR1B
+    #define SPINDLE_LPWM_COMB_BIT         COM1B1
+
   #else
 
     // Dual axis feature requires an independent step pulse pin to operate. The independent direction pin is not 
@@ -187,13 +195,13 @@
 
       // Define spindle enable output pin.
       // NOTE: Spindle enable moved from D12 to A3 (old coolant flood enable pin). Spindle direction pin is removed.
-      #define SPINDLE_ENABLE_DDR    DDRB
-      #define SPINDLE_ENABLE_PORT   PORTB
+      #define SPINDLE_RPWM_DDR    DDRB
+      #define SPINDLE_RPWM_PORT   PORTB
       #ifdef VARIABLE_SPINDLE
         // NOTE: USE_SPINDLE_DIR_AS_ENABLE_PIN not supported with dual axis feature.
-        #define SPINDLE_ENABLE_BIT    3  // Uno Digital Pin 11
+        #define SPINDLE_RPWM_BIT    3  // Uno Digital Pin 11
       #else
-        #define SPINDLE_ENABLE_BIT    4  // Uno Digital Pin 12
+        #define SPINDLE_RPWM_BIT    4  // Uno Digital Pin 12
       #endif
 
       // Variable spindle configuration below. Do not change unless you know what you are doing.
@@ -246,9 +254,9 @@
 
       // Define spindle enable output pin.
       // NOTE: Spindle enable moved from D12 to A3 (old coolant flood enable pin). Spindle direction pin is removed.
-      #define SPINDLE_ENABLE_DDR    DDRC
-      #define SPINDLE_ENABLE_PORT   PORTC
-      #define SPINDLE_ENABLE_BIT    3  // Uno Analog Pin 3
+      #define SPINDLE_RPWM_DDR    DDRC
+      #define SPINDLE_RPWM_PORT   PORTC
+      #define SPINDLE_RPWM_BIT    3  // Uno Analog Pin 3
     #endif
 
   #endif
