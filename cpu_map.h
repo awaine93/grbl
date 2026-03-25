@@ -61,7 +61,11 @@
   #define LIMIT_PIN        PINB
   #define LIMIT_PORT       PORTB
   #define X_LIMIT_BIT      1  // Uno Digital Pin 9
-  #define Y_LIMIT_BIT      2  // Uno Digital Pin 10
+
+  // Y_LIMIT_BIT pin has been swapped with spindle Direction bit and some wiring has been done to fix the 
+  //led issue, see Coment for SPINDLE_DIRECTIPON_BIT was set as 2 - Uno Digital Pin 10 
+  #define Y_LIMIT_BIT      5  
+  
   #ifdef VARIABLE_SPINDLE // Z Limit pin and spindle enabled swapped to access hardware PWM on Pin 11.
     #define Z_LIMIT_BIT	   4 // Uno Digital Pin 12
   #else
@@ -123,7 +127,9 @@
     #ifndef USE_SPINDLE_DIR_AS_ENABLE_PIN
       #define SPINDLE_DIRECTION_DDR   DDRB
       #define SPINDLE_DIRECTION_PORT  PORTB
-      #define SPINDLE_DIRECTION_BIT   5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
+      //SPINDLE_DIRECTION_BIT was originally set as 5 - Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.) <- i have wired this pin 
+      // so that it gives a 5v voltage with a 470ohm resistor to the input of the endstop now using D13
+      #define SPINDLE_DIRECTION_BIT   2  
     #endif
 
     // Variable spindle configuration below. Do not change unless you know what you are doing.
