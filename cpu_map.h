@@ -63,8 +63,8 @@
   #define X_LIMIT_BIT      1  // Uno Digital Pin 9
 
   // Y_LIMIT_BIT pin has been swapped with spindle Direction bit and some wiring has been done to fix the 
-  //led issue, see Coment for SPINDLE_DIRECTIPON_BIT was set as 2 - Uno Digital Pin 10 
-  #define Y_LIMIT_BIT      5  
+  //led issue, see Coment for SPINDLE_DIRECTIPON_BIT ------- was set as 2 - Uno Digital Pin 10  
+  #define Y_LIMIT_BIT      5  // Uno Digital pin D13 - Spindle dir pin on cnc shield
   
   #ifdef VARIABLE_SPINDLE // Z Limit pin and spindle enabled swapped to access hardware PWM on Pin 11.
     #define Z_LIMIT_BIT	   4 // Uno Digital Pin 12
@@ -119,7 +119,7 @@
         // If enabled, spindle direction pin now used as spindle enable, while PWM remains on D11.
         #define SPINDLE_ENABLE_BIT    5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
       #else
-        #define SPINDLE_ENABLE_BIT    3  // Uno Digital Pin 11
+        #define SPINDLE_ENABLE_BIT    3  // Uno Digital Pin 11 -- Z Limit pin on CNC sheild - connects to RPWM on BTS7960
       #endif
     #else
       #define SPINDLE_ENABLE_BIT    4  // Uno Digital Pin 12
@@ -129,7 +129,7 @@
       #define SPINDLE_DIRECTION_PORT  PORTB
       //SPINDLE_DIRECTION_BIT was originally set as 5 - Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.) <- i have wired this pin 
       // so that it gives a 5v voltage with a 470ohm resistor to the input of the endstop now using D13
-      #define SPINDLE_DIRECTION_BIT   2  
+      #define SPINDLE_DIRECTION_BIT   2  // Uno Digital Pin 10 - Y Limit pin on CNC sheild -- connects to LPWM on BTS7960
     #endif
 
     // Variable spindle configuration below. Do not change unless you know what you are doing.
